@@ -169,6 +169,7 @@ module RSpec
               rescue Pending::SkipDeclaredInExample
                 # no-op, required metadata has already been set by the `skip`
                 # method.
+              rescue Interrupt
               rescue Exception => e
                 set_exception(e)
               ensure
@@ -176,6 +177,7 @@ module RSpec
               end
             end
           end
+        rescue Interrupt
         rescue Exception => e
           set_exception(e)
         ensure
@@ -321,6 +323,7 @@ module RSpec
       # @private
       def instance_exec_with_rescue(context, &block)
         @example_group_instance.instance_exec(self, &block)
+      rescue Interrupt
       rescue Exception => e
         set_exception(e, context)
       end
@@ -338,6 +341,7 @@ module RSpec
         else
           @example_group_class.hooks.run(:around, :example, self, Procsy.new(self, &block))
         end
+      rescue Interrupt
       rescue Exception => e
         set_exception(e, "in an `around(:example)` hook")
       end
@@ -380,6 +384,7 @@ module RSpec
         @example_group_class.hooks.run(:after, :example, self)
         verify_mocks
         assign_generated_description if RSpec.configuration.expecting_with_rspec?
+      rescue Interrupt
       rescue Exception => e
         set_exception(e, "in an `after(:example)` hook")
       ensure
@@ -388,6 +393,7 @@ module RSpec
 
       def verify_mocks
         @example_group_instance.verify_mocks_for_rspec if mocks_need_verification?
+      rescue Interrupt
       rescue Exception => e
         if pending?
           execution_result.pending_fixed = false
@@ -406,6 +412,7 @@ module RSpec
           metadata[:description] = description
           metadata[:full_description] << description
         end
+      rescue Interrupt
       rescue Exception => e
         set_exception(e, "while assigning the example description")
       ensure

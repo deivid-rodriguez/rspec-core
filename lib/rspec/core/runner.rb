@@ -54,19 +54,20 @@ module RSpec
       #   or the configured failure exit code (1 by default) if specs
       #   failed.
       def self.run(args, err=$stderr, out=$stdout)
-        trap_interrupt
         options = ConfigurationOptions.new(args)
 
-        if options.options[:drb]
-          require 'rspec/core/drb'
-          begin
-            DRbRunner.new(options).run(err, out)
-          rescue DRb::DRbConnError
-            err.puts "No DRb server is running. Running in local process instead ..."
+        catching_interrupts do
+          if options.options[:drb]
+            require 'rspec/core/drb'
+            begin
+              DRbRunner.new(options).run(err, out)
+            rescue DRb::DRbConnError
+              err.puts "No DRb server is running. Running in local process instead ..."
+              new(options).run(err, out)
+            end
+          else
             new(options).run(err, out)
           end
-        else
-          new(options).run(err, out)
         end
       end
 
@@ -146,12 +147,11 @@ module RSpec
       # rubocop:enable Lint/EnsureReturn
 
       # @private
-      def self.trap_interrupt
-        trap('INT') do
-          exit!(1) if RSpec.world.wants_to_quit
-          RSpec.world.wants_to_quit = true
-          STDERR.puts "\nExiting... Interrupt again to exit immediately."
-        end
+      def self.catching_interrupts
+        yield
+      rescue Interrupt
+        STDERR.puts "\nExiting by user request..."
+        exit!(1)
       end
     end
   end

@@ -47,6 +47,7 @@ module RSpec
 
         begin
           ret = obj.__send__(meth)
+        rescue Interrupt
         rescue Exception => e
           raise TypeError, "Coercion error: #{obj.inspect}.#{meth} => #{cls} failed:\n" \
                            "(#{e.message})"
