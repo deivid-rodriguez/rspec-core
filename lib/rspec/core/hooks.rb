@@ -362,8 +362,7 @@ module RSpec
       class AfterContextHook < Hook
         def run(example)
           example.instance_exec(example, &block)
-        rescue Interrupt
-        rescue Exception => e
+        rescue *RSpec.world.handled_exceptions => e
           # TODO: come up with a better solution for this.
           RSpec.configuration.reporter.message <<-EOS
 

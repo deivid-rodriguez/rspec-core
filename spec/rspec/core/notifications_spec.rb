@@ -14,7 +14,7 @@ RSpec.describe "FailedExampleNotification" do
   describe "#read_failed_line" do
     context "when backtrace is a heterogeneous language stack trace" do
       let(:exception) do
-        instance_double(Exception, :backtrace => [
+        instance_double(StandardError, :backtrace => [
           "at Object.prototypeMethod (foo:331:18)",
           "at Array.forEach (native)",
           "at a_named_javascript_function (/some/javascript/file.js:39:5)",
@@ -28,7 +28,7 @@ RSpec.describe "FailedExampleNotification" do
     end
 
     context "when backtrace will generate a security error" do
-      let(:exception) { instance_double(Exception, :backtrace => [ "#{__FILE__}:#{__LINE__}"]) }
+      let(:exception) { instance_double(StandardError, :backtrace => [ "#{__FILE__}:#{__LINE__}"]) }
 
       it "is handled gracefully" do
         safely do
@@ -38,7 +38,7 @@ RSpec.describe "FailedExampleNotification" do
     end
 
     context "when ruby reports a bogus line number in the stack trace" do
-      let(:exception) { instance_double(Exception, :backtrace => [ "#{__FILE__}:10000000"]) }
+      let(:exception) { instance_double(StandardError, :backtrace => [ "#{__FILE__}:10000000"]) }
 
       it "reports the filename and that it was unable to find the matching line" do
         expect(notification.send(:read_failed_line)).to include("Unable to find matching line")
@@ -58,18 +58,18 @@ RSpec.describe "FailedExampleNotification" do
         end
       end
 
-      let(:exception) { instance_double(Exception, :backtrace => [ "#{__FILE__}:#{__LINE__}"]) }
+      let(:exception) { instance_double(StandardError, :backtrace => [ "#{__FILE__}:#{__LINE__}"]) }
 
       it "doesn't hang when file exists" do
         expect(notification.send(:read_failed_line).strip).to eql(
-          %Q[let(:exception) { instance_double(Exception, :backtrace => [ "\#{__FILE__}:\#{__LINE__}"]) }])
+          %Q[let(:exception) { instance_double(StandardError, :backtrace => [ "\#{__FILE__}:\#{__LINE__}"]) }])
       end
 
     end
   end
 
   describe '#message_lines' do
-    let(:exception) { instance_double(Exception, :backtrace => [ "#{__FILE__}:#{__LINE__}"], :message => 'Test exception') }
+    let(:exception) { instance_double(StandardError, :backtrace => [ "#{__FILE__}:#{__LINE__}"], :message => 'Test exception') }
     let(:example_group) { class_double(RSpec::Core::ExampleGroup, :metadata => {}, :parent_groups => [], :location => "#{__FILE__}:#{__LINE__}") }
 
     before do

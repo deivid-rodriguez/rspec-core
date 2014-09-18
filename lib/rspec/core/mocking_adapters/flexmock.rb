@@ -14,6 +14,10 @@ module RSpec
           :flexmock
         end
 
+        def self.mock_expectation_error
+          ::FlexMock::MockError
+        end
+
         def setup_mocks_for_rspec
           # No setup required
         end

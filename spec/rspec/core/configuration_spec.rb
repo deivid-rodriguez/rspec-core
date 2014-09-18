@@ -215,11 +215,6 @@ module RSpec::Core
         config.mock_with :mocha
       end
 
-      it "uses the null adapter when given :nothing" do
-        expect(RSpec::Support).to receive(:require_rspec_core).with('mocking_adapters/null').and_call_original
-        config.mock_with :nothing
-      end
-
       it "raises an error when given an unknown key" do
         expect {
           config.mock_with :crazy_new_mocking_framework_ive_not_yet_heard_of
@@ -266,20 +261,8 @@ module RSpec::Core
 
     describe "#expectation_frameworks" do
       it "defaults to :rspec" do
-        expect(config).to receive(:require).with('rspec/expectations')
-        expect(config.expectation_frameworks).to eq([RSpec::Matchers])
-      end
-
-      context "when rspec-expectations is not installed" do
-        def an_anonymous_module
-          name = RUBY_VERSION.to_f < 1.9 ? '' : nil
-          an_object_having_attributes(:class => Module, :name => name)
-        end
-
-        it 'gracefully falls back to an anonymous module' do
-          allow(config).to receive(:require).with('rspec/expectations').and_raise(LoadError)
-          expect(config.expectation_frameworks).to match([an_anonymous_module])
-        end
+        expect(RSpec::Support).to receive(:require_rspec_core).with('expectation_adapters/rspec')
+        expect(config.expectation_frameworks).to eq([ExpectationAdapters::RSpec])
       end
     end
 
@@ -290,69 +273,69 @@ module RSpec::Core
       end
     end
 
-    def stub_expectation_adapters
-      stub_const("Test::Unit::Assertions", Module.new)
-      stub_const("Minitest::Assertions", Module.new)
-      stub_const("RSpec::Core::TestUnitAssertionsAdapter", Module.new)
-      stub_const("RSpec::Core::MinitestAssertionsAdapter", Module.new)
-      allow(config).to receive(:require)
-    end
+     describe "#expect_with" do
+      it "allows rspec-expectations to be configured with a provided block" do
+        mod = Module.new
 
-    describe "#expect_with" do
-      before do
-        stub_expectation_adapters
+        expect(RSpec::Expectations.configuration).to receive(:setting).with(:val)
+
+        config.expect_with :rspec do |c|
+          c.setting :val
+        end
+      end
+
+      context "with a named adapter" do
+        it "requires the adapter" do
+          expect(RSpec::Support).to receive(:require_rspec_core).with('expectation_adapters/minitest')
+          stub_const("RSpec::Core::ExpectationAdapters::Minitest", Module.new)
+          config.expect_with :minitest
+        end
+
+        it "sets the expectation framework to the adapter" do
+          expect(config.expect_with :minitest).to eq([ExpectationAdapters::Minitest])
+        end
+      end
+
+      context "with a module" do
+        it "sets the mock_framework_adapter to that module" do
+          mod = Module.new
+          config.expect_with mod
+          expect(config.expectation_frameworks).to eq([mod])
+        end
+      end
+
+      it "raises an error when given an unknown key" do
+        expect {
+          config.expect_with :unknown_expectation_framework
+        }.to raise_error(ArgumentError, /unknown expectation framework/i)
+      end
+
+      it "raises an error when given another type of object" do
+        expect {
+          config.expect_with Object.new
+        }.to raise_error(ArgumentError, /unknown expectation framework/i)
       end
 
       it_behaves_like "a configurable framework adapter", :expect_with
 
-      context "with :rspec" do
-        it "requires rspec/expectations" do
-          expect(config).to receive(:require).with('rspec/expectations')
-          config.expect_with :rspec
-        end
-
-        it "sets the expectation framework to ::RSpec::Matchers" do
-          config.expect_with :rspec
-          expect(config.expectation_frameworks).to eq [::RSpec::Matchers]
-        end
+      it "raises an error when given an unknown key" do
+        expect {
+          config.expect_with :unknown_expectation_framework
+        }.to raise_error(ArgumentError, /unknown expectation framework/i)
       end
 
-      context "with :test_unit" do
-        it "requires rspec/core/test_unit_assertions_adapter" do
-          expect(config).to receive(:require).
-            with('rspec/core/test_unit_assertions_adapter')
-          config.expect_with :test_unit
-        end
-
-        it "sets the expectation framework to ::Test::Unit::Assertions" do
-          config.expect_with :test_unit
-          expect(config.expectation_frameworks).to eq [
-            ::RSpec::Core::TestUnitAssertionsAdapter
-          ]
-        end
-      end
-
-      context "with :minitest" do
-        it "requires rspec/core/minitest_assertions_adapter" do
-          expect(config).to receive(:require).
-            with('rspec/core/minitest_assertions_adapter')
-          config.expect_with :minitest
-        end
-
-        it "sets the expectation framework to ::Minitest::Assertions" do
-          config.expect_with :minitest
-          expect(config.expectation_frameworks).to eq [
-            ::RSpec::Core::MinitestAssertionsAdapter
-          ]
-        end
+      it "raises an error when given another type of object" do
+        expect {
+          config.expect_with Object.new
+        }.to raise_error(ArgumentError, /unknown expectation framework/i)
       end
 
       it "supports multiple calls" do
         config.expect_with :rspec
         config.expect_with :minitest
         expect(config.expectation_frameworks).to eq [
-          RSpec::Matchers,
-          RSpec::Core::MinitestAssertionsAdapter
+          ExpectationAdapters::RSpec,
+          ExpectationAdapters::Minitest
         ]
       end
 
@@ -394,10 +377,6 @@ module RSpec::Core
     end
 
     describe "#expecting_with_rspec?" do
-      before do
-        stub_expectation_adapters
-      end
-
       it "returns false by default" do
         expect(config).not_to be_expecting_with_rspec
       end

@@ -7,10 +7,14 @@ module RSpec
       include RSpec::Core::Hooks
 
       # @private
-      attr_reader :example_groups, :filtered_examples
+      attr_reader :example_groups, :filtered_examples, :handled_exceptions
 
       # Used internally to determine what to do when a SIGINT is received
       attr_accessor :wants_to_quit
+
+      # @private
+      # List of exceptions handled by RSpec
+      EXCEPTIONS = [ScriptError, StandardError, SystemExit, SystemStackError]
 
       def initialize(configuration=RSpec.configuration)
         @configuration = configuration
@@ -23,6 +27,13 @@ module RSpec
             examples
           end
         end
+        @handled_exceptions = EXCEPTIONS
+      end
+
+      # @private
+      # Add a custom Exception to by handled by RSpec
+      def add_exception(exception_class)
+        @handled_exceptions << exception_class
       end
 
       # @private

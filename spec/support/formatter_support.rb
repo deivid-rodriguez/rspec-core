@@ -70,8 +70,8 @@ module FormatterSupport
         |
         |  4) a failing spec with odd backtraces fails with a backtrace containing an erb file
         |     Failure/Error: Unable to find matching line from backtrace
-        |     Exception:
-        |       Exception
+        |     StandardError:
+        |       StandardError
         |     # /foo.html.erb:1:in `<main>': foo (RuntimeError)
         |
         |Finished in n.nnnn seconds (files took n.nnnn seconds to load)
@@ -134,8 +134,8 @@ module FormatterSupport
         |
         |  4) a failing spec with odd backtraces fails with a backtrace containing an erb file
         |     Failure/Error: Unable to find matching line from backtrace
-        |     Exception:
-        |       Exception
+        |     StandardError:
+        |       StandardError
         |     # /foo.html.erb:1:in `<main>': foo (RuntimeError)
         |
         |Finished in n.nnnn seconds (files took n.nnnn seconds to load)
@@ -209,7 +209,7 @@ module FormatterSupport
   end
 
   def exception
-    Exception.new
+    StandardError.new
   end
 
   def examples(n)

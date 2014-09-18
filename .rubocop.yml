@@ -18,7 +18,7 @@ Lint/HandleExceptions:
     - lib/rspec/core/example.rb
     - lib/rspec/core/mocking_adapters/mocha.rb
     - lib/rspec/core/runner.rb
-    - lib/rspec/core/test_unit_assertions_adapter.rb
+    - lib/rspec/core/expectation_adapters/testunit.rb
 
 Lint/LiteralInInterpolation:
   Enabled: false

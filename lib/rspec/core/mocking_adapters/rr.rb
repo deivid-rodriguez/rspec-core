@@ -12,6 +12,10 @@ module RSpec
           :rr
         end
 
+        def self.mock_expectation_error
+          ::RR::Errors::RRError
+        end
+
         include ::RR::Extensions::InstanceMethods
 
         def setup_mocks_for_rspec

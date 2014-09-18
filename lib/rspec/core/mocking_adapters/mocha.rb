@@ -33,6 +33,10 @@ module RSpec
           :mocha
         end
 
+        def self.mock_expectation_error
+          ::Mocha::ExpectationError
+        end
+
         # Mocha::Standalone was deprecated as of Mocha 0.9.7.
         begin
           include ::Mocha::API

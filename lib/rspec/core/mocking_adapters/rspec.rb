@@ -11,6 +11,10 @@ module RSpec
           :rspec
         end
 
+        def self.mock_expectation_error
+          ::RSpec::Mocks::MockExpectationError
+        end
+
         def self.configuration
           ::RSpec::Mocks.configuration
         end

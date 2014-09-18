@@ -186,7 +186,7 @@ module RSpec::Core
               example { }
             end.run
 
-            expect(result).to be_an(Exception)
+            expect(result).to be_an(StandardError)
             expect(result.message).to match(/subject accessed.*#{hook}\(:context\).*#{__FILE__}:#{line}/m)
           end
         end
@@ -461,7 +461,7 @@ module RSpec::Core
           example { }
         end.run
 
-        expect(result).to be_an(Exception)
+        expect(result).to be_an(StandardError)
         expect(result.message).to match(/let declaration `foo` accessed.*#{hook}\(:context\).*#{__FILE__}:#{line}/m)
       end
     end

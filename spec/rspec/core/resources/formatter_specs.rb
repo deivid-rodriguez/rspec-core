@@ -40,7 +40,7 @@ RSpec.describe "a failing spec with odd backtraces" do
   end
 
   it "fails with a backtrace containing an erb file" do
-    e = Exception.new
+    e = StandardError.new
 
     def e.backtrace
       ["/foo.html.erb:1:in `<main>': foo (RuntimeError)",

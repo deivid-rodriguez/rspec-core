@@ -506,6 +506,10 @@ module RSpec
             RSpec::Core::MockingAdapters.const_get(const_name)
           end
 
+        if framework_module.respond_to?(:mock_expectation_error)
+          RSpec.world.add_exception(framework_module.mock_expectation_error)
+        end
+
         new_name, old_name = [framework_module, @mock_framework].map do |mod|
           mod.respond_to?(:framework_name) ?  mod.framework_name : :unnamed
         end
@@ -539,6 +543,13 @@ module RSpec
         expect_with(framework)
       end
 
+      # @private
+      EXPECTATION_ADAPTERS = {
+        :minitest  => :Minitest,
+        :test_unit => :TestUnit,
+        :rspec     => :RSpec,
+      }
+
       # Sets the expectation framework module(s) to be included in each example
       # group.
       #
@@ -567,19 +578,23 @@ module RSpec
           case framework
           when Module
             framework
-          when :rspec
-            require 'rspec/expectations'
-            self.expecting_with_rspec = true
-            ::RSpec::Matchers
-          when :test_unit
-            require 'rspec/core/test_unit_assertions_adapter'
-            ::RSpec::Core::TestUnitAssertionsAdapter
-          when :minitest
-            require 'rspec/core/minitest_assertions_adapter'
-            ::RSpec::Core::MinitestAssertionsAdapter
           else
-            raise ArgumentError, "#{framework.inspect} is not supported"
+            const_name = EXPECTATION_ADAPTERS.fetch(framework) do
+              raise ArgumentError,
+                    "Unknown expectation framework: #{framework.inspect}. " \
+                    "Pass a module or one of #{EXPECTATION_ADAPTERS.keys.inspect}"
+            end
+
+            RSpec::Support.require_rspec_core "expectation_adapters/#{const_name.to_s.downcase}"
+            self.expecting_with_rspec = true if framework == :rspec
+            RSpec::Core::ExpectationAdapters.const_get(const_name)
           end
+        end
+
+        modules.each do |mod|
+          next unless mod.respond_to?(:expectation_error)
+
+          RSpec.world.add_exception(mod.expectation_error)
         end
 
         if (modules - @expectation_frameworks).any?

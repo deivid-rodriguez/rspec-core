@@ -467,7 +467,7 @@ module RSpec
         rescue Interrupt => ex
           RSpec.world.wants_to_quit = true
           for_filtered_examples(reporter) { |example| example.fail_with_exception(reporter, ex) }
-        rescue Exception => ex
+        rescue *RSpec.world.handled_exceptions => ex
           RSpec.world.wants_to_quit = true if fail_fast?
           for_filtered_examples(reporter) { |example| example.fail_with_exception(reporter, ex) }
         ensure

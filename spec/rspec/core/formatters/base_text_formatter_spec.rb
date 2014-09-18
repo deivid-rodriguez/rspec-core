@@ -64,7 +64,7 @@ RSpec.describe RSpec::Core::Formatters::BaseTextFormatter do
 
     context "with an exception without a message" do
       it "does not throw NoMethodError" do
-        exception_without_message = Exception.new()
+        exception_without_message = StandardError.new()
         allow(exception_without_message).to receive(:message) { nil }
         group.example("example name") { raise exception_without_message }
         expect { run_all_and_dump_failures }.not_to raise_error

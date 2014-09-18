@@ -101,10 +101,6 @@ Proc:
 RedundantReturn:
   AllowMultipleReturnValues: true
 
-# We have to rescue Exception in the `raise_error` matcher for it to work properly.
-RescueException:
-  Enabled: false
-
 # We haven't adopted the `fail` to signal exceptions vs `raise` for re-raises convention.
 SignalException:
   Enabled: false
